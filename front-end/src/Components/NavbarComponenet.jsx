@@ -97,7 +97,7 @@ function MobileNav({ user, setuser, setisDropDownOpen, isDropDownOpen }) {
 
 const SearchBar = () => {
   return (<>
-    <div className='m-3 w-1/2 shadow-md flex flex-row h-12 gap-1 '>
+    <div className='m-3 w-1/2 shadow-md flex  flex-col md:flex-row h-12 gap-1 '>
       <span className='pt-3 pl-3 text-[#ff7e8b]'><TiLocation /></span>
       <input type="text" placeholder='Rajpura' className='h-full  p-1 outline-none' ></input>
       <div className='pt-3'><MdOutlineArrowDropDown /></div>
