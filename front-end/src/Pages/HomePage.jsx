@@ -3,7 +3,7 @@ import MainHero from '../Components/MainHero'
 
 function HomePage() {
   return (<>
-    {/* <MainHero/> */}
+    <MainHero/>
     </>
   )
 }
