@@ -5,9 +5,10 @@ function Protected(props) {
     const {Component} = props;
     const navigate = useNavigate()
     useEffect(()=>{
-        let login= false
+        let login= localStorage.getItem('userCredentials');
         if (!login){
-            navigate('/signin')
+            navigate('/');
+            alert("Please Login to access Login Page");
         }
     },[])
   return (

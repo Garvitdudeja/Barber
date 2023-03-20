@@ -9,15 +9,20 @@ export default function SignUp(props) {
     const [UserInfo, setUserInfo] = useState()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState()
+    const [Image, setImage] = useState();
 
     const handleChange = (e) => {
         setUserInfo({ ...UserInfo, [e.target.name]: e.target.value });
     }
+    const handleImage = (e) =>{
+    }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
         setError(null)
-        const userInfo = await axios.post('/auth/signUp', UserInfo);
-        console.log(userInfo)
+        const formData = new FormData(e.target);
+        // const data = Object.fromEntries(formData);
+        const userInfo = await axios.post('/auth/signUp', formData);
+        axios.defaults.headers.common['Authorization']  = "Bearer "+ userInfo.data.token;
         setLoading(true)
         if (userInfo.data.token) {
             localStorage.setItem('userCredentials', JSON.stringify(userInfo.data))
@@ -86,7 +91,7 @@ export default function SignUp(props) {
                                     <div className="mt-[1rem]">                                       <form
                                         onSubmit={(event) => {
                                             event.preventDefault();
-                                            handleSubmit()
+                                            handleSubmit(event)
                                         }}
                                     >
                                         <TextField
@@ -131,6 +136,11 @@ export default function SignUp(props) {
                                             sx={{ mb: 1 }}
                                             fullWidth
 
+                                        />
+                                        <TextField 
+                                        type='file'
+                                        name="image"
+                                        onChange={handleImage}
                                         />
                                         <p className="text-red-500">{error}</p>
                                         <br />

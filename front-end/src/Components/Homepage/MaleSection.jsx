@@ -66,7 +66,6 @@ function MaleSectionLarge(props) {
     useEffect(() => {
         if (typeP) {
             setGender(typeP)
-            console.log(gender)
         };
     })
 
@@ -107,7 +106,6 @@ function MaleSectionLarge(props) {
 
 const MaleSection = (props) => {
     var category = props.category;
-    console.log(category);
     return (<>
         <div className='hidden lg:inline w-4/5'>
         <MaleSectionLarge  category={category} /></div>

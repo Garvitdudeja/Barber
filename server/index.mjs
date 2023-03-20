@@ -4,12 +4,17 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import multer from "multer";
-import imagesModel from "./database/imagesModel.mjs";
-
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 
 import Auth from './Routes/Auth.mjs'
 
 
+const corsOptions ={
+  origin:'http://localhost:3000', 
+  credentials:true,            //access-control-allow-credentials:true
+  optionSuccessStatus:200
+}
 const upload = multer({ dest: "uploads" });
 const uri =process.env.MONGO_URI
 
@@ -21,17 +26,19 @@ try {
 
 const myapp = express();
 
-// myapp.use(bodyParser.urlencoded({   extended: false }))
-// myapp.use(bodyParser.json())
+myapp.use(bodyParser.urlencoded({   extended: false }))
+myapp.use(bodyParser.json())
 myapp.use(express.json());
-myapp.use(cors());
+myapp.use(cors(corsOptions));
 myapp.use("/uploads", express.static("uploads/"));
 myapp.use('/auth', Auth)
+myapp.use(cookieParser())
 
 myapp.get("/", (req, res) => {
   return res.json({ status: "server is working" });
 });
 
+myapp.use(cors({ credentials: true, origin: true }));
 // myapp.post("/login", upload.single("file"), async (req, res) => {
 //   try {
 //     await imagesModel.create({

@@ -15,12 +15,17 @@ export default function Login(props) {
         setLoginInfo({ ...loginInfo, [e.target.name]: e.target.value })
     }
     const handleSubmit = async (e) => {
-        const userInfo = await axios.post('/auth/logIn', loginInfo)
+        const userInfo = await axios.post('/auth/logIn', loginInfo,{
+            withCredentials: true
+        })
+        console.log(userInfo);
+        axios.defaults.headers.common['Authorization']  = "Bearer "+userInfo.data.token;
+        console.log(axios.defaults.headers.common['Authorization'])
         setLoading(true)
-        console.log(userInfo)
         if (userInfo.data.token) {
             localStorage.setItem('userCredentials', JSON.stringify(userInfo.data))
-            setUserData(userInfo.data)
+            setUserData(userInfo.data);
+            setLoading(false);
             closeModal();
         }
         if (userInfo.data.error) {
@@ -87,11 +92,13 @@ export default function Login(props) {
                                         <form
                                             onSubmit={(event) => {
                                                 event.preventDefault();
+                                                handleSubmit();
                                             }}
                                         >
                                             <TextField
                                                 placeholder="123@example.com"
                                                 required
+                                                type="email"
                                                 name='email'
                                                 label="Email" variant="outlined"
                                                 onChange={handleChange}
@@ -112,8 +119,7 @@ export default function Login(props) {
                                             <br />
                                             <p className="text-red-500">{err}</p>
                                             <LoadingButton type="submit"
-                                                loading={loading}
-                                                onClick={handleSubmit} >Login</LoadingButton>
+                                                loading={loading} >Login</LoadingButton>
                                         </form>
                                     </div>
 

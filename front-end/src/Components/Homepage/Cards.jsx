@@ -48,7 +48,7 @@ const Cards = () => {
                 {info.map((each) => {
                     return (
                         <>
-                            <div className="inline-block w-1/3 ">
+                            <div className="inline-block sm:w-full md:w-1/2 lg:w-1/3 ">
                                 <Link to='salon/1' style={{ textDecoration: 'none' }}>
                                     <div className="m-auto  hover:border-4 hover:shadow-md">
                                         <div className="m-3 p-2 ">

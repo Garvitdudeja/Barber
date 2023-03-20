@@ -1,12 +1,16 @@
 import express from "express";
 import Auth from "../middleware/Auth.mjs";
+import multer from "multer";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import UserModel from "../database/UserModel.mjs";
+import MarksTableModel from "../database/TableModel.mjs";
+
 
 const router = express.Router();
 
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+const upload = multer({ dest: "uploads" });
 
-import UserModel from "../database/UserModel.mjs";
 
 // Route    - /signUp
 // Des      - Add new USER
@@ -15,18 +19,18 @@ import UserModel from "../database/UserModel.mjs";
 // Params   - None
 // Body     - userName, password, phoneNumber, email
 
-router.post("/signUp", async (req, res) => {
+router.post("/signUp",upload.single('image'), async (req, res) => {
   try {
+    let image=req.file
+    if (!image){
+      image = {path : '/'}
+    }
     const { userName, password, phoneNumber, email } = req.body;
+    
     if (!userName || !password || !phoneNumber || !email) {
       return res.json({ error: "Add complete Details" }).status(400);
     }
 
-    // const userAlreadyexist = await UserModel.findOne({ $or :[ { email: email }, { phoneNumber: phoneNumber} ]})
-    // console.log(userAlreadyexist)
-    // if (userAlreadyexist){
-    //   return res.json({ error: "Email or PhoneNumber already exist" }).status(200)
-    // }
 
     const Salt = await bcrypt.genSalt(8);
     const hashedPassword = await bcrypt.hash(password, Salt);
@@ -35,39 +39,44 @@ router.post("/signUp", async (req, res) => {
       password: hashedPassword,
       phoneNumber: phoneNumber,
       email: email,
+      image: image.path,
     });
-    const jwtToken = GenerateJWT(user._id)
-    res.header('Authorization','Bearer '+jwtToken)
     if (user) {
+      const jwtToken =  jwt.sign({ UserId: user._id }, process.env.SECRET_TOKEN, {
+        expiresIn: "30d",
+      })
+      res.cookie('jwt', jwtToken)
       return res.json({
         _id: user._id,
         userName: user.name,
         email: user.email,
-        token: jwtToken,
+        image:user.image,
+        token:jwtToken
       });
     }
   } catch (err) {
-    return res.json({error: err.message});
+    return res.json({ error: err.message });
   }
 });
 
+
+
 router.post("/logIn", async (req, res) => {
-  console.log(req.headers);
   try {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email: email });
     if (!user) {
       return res
-        .status(400)
-        .json({ error: "Enter correct email address and password" });
+        .json({ error: "Enter correct email address and password" })
+        .status(400);
     }
     const cmpPassword = await bcrypt.compare(password, user.password);
-    const jwtToken = GenerateJWT(user._id)
-    // res.header('Authorization','Bearer '+jwtToken)
-    res.set('Authorization', `Bearer ${jwtToken}`)
-    console.log(res.getHeader('Authorization'));
-    // res.headers.authorization = 'Bearer '+jwtToken;
     if (cmpPassword) {
+      const jwtToken = jwt.sign({ UserId: user._id }, process.env.SECRET_TOKEN, {
+        expiresIn: "30d",
+      })
+      res.cookie("jwt",jwtToken);
+
       return res.json({
         _id: user._id,
         email: user.email,
@@ -79,26 +88,31 @@ router.post("/logIn", async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error)
-    return res.json(error)
+    return res.json({ error: error.message });
   }
 });
 
-router.put("/update/:id", Auth, async(req, res) => {
+router.get("/getUser",Auth, async (req, res) => {
   try {
-    const User = await UserModel.findById({_id:req.user.id})
-    return res.json({ user: "sucessfully logedin" });
+    const UserId = req.user.UserId;
+    const userData = await UserModel.findById({_id: UserId});
+    return res.json(userData);
   } catch (error) {
-    return res.json(error)
+    return res.json({ error: error.message });
   }
 });
 
-const GenerateJWT = (res,id) => {
-
-  return jwt.sign({ id }, process.env.SECRET_TOKEN, {
-    expiresIn: "30d",
-  });
-  
-};
+// Testing 
+router.get('/updateUser',async (req,res)=>{
+  try{
+    const user =  await UserModel.aggregate([
+      {$group:{'_id':'$userName',totalAmount : {$sum : { $sum : ['$amount', '$fee']}},}}
+    ])
+    return res.json({sucess: user})
+  }
+  catch(error){
+    return res.json({error: error.message});
+  }
+})
 
 export default router;

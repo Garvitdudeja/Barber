@@ -1,6 +1,7 @@
 import React from 'react'
 import mainImage from '../../images/sslon.jpg'
 
+
 function MainHero() {
   return (
     <>
@@ -14,6 +15,7 @@ function MainHero() {
         </div>
         </div>
     </div>
+
         </>
   )
 }
